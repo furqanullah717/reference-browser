@@ -7,9 +7,10 @@ package org.mozilla.reference.browser
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.AttributeSet
 import android.view.View
-import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.snackbar.Snackbar.LENGTH_LONG
@@ -26,13 +27,12 @@ import mozilla.components.support.webextensions.WebExtensionPopupFeature
 import org.mozilla.reference.browser.addons.WebExtensionActionPopupActivity
 import org.mozilla.reference.browser.browser.BrowserFragment
 import org.mozilla.reference.browser.browser.CrashIntegration
-import org.mozilla.reference.browser.ext.components
 import org.mozilla.reference.browser.ext.isCrashReportActive
 
 /**
  * Activity that holds the [BrowserFragment].
  */
-open class BrowserActivity : AppCompatActivity() {
+open class BrowserActivity : BaseActivity() {
 
     private lateinit var crashIntegration: CrashIntegration
 
@@ -47,10 +47,12 @@ open class BrowserActivity : AppCompatActivity() {
      * Returns a new instance of [BrowserFragment] to display.
      */
     open fun createBrowserFragment(sessionId: String?): Fragment =
-        BrowserFragment.create(sessionId)
+            BrowserFragment.create(sessionId)
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        setTheme(R.style.AppThemeNotActionBar)
         super.onCreate(savedInstanceState)
+
         setContentView(R.layout.activity_main)
 
         if (savedInstanceState == null) {
@@ -59,16 +61,21 @@ open class BrowserActivity : AppCompatActivity() {
                 commit()
             }
         }
-
-        if (isCrashReportActive) {
-            crashIntegration = CrashIntegration(this, components.analytics.crashReporter) { crash ->
-                onNonFatalCrash(crash)
+        Handler(Looper.getMainLooper()).post {
+            if (isCrashReportActive) {
+                crashIntegration = CrashIntegration(this, components.analytics.crashReporter) { crash ->
+                    onNonFatalCrash(crash)
+                }
+                lifecycle.addObserver(crashIntegration)
             }
-            lifecycle.addObserver(crashIntegration)
+            lifecycle.addObserver(webExtensionPopupFeature)
         }
 
         NotificationManager.checkAndNotifyPolicy(this)
-        lifecycle.addObserver(webExtensionPopupFeature)
+    }
+
+    override fun onResume() {
+        super.onResume()
     }
 
     override fun onBackPressed() {
@@ -85,7 +92,7 @@ open class BrowserActivity : AppCompatActivity() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         Logger.info("Activity onActivityResult received with " +
-            "requestCode: $requestCode, resultCode: $resultCode, data: $data")
+                "requestCode: $requestCode, resultCode: $resultCode, data: $data")
 
         supportFragmentManager.fragments.forEach {
             if (it is ActivityResultHandler && it.onActivityResult(requestCode, data, resultCode)) {
@@ -130,16 +137,16 @@ open class BrowserActivity : AppCompatActivity() {
     }
 
     override fun onCreateView(parent: View?, name: String, context: Context, attrs: AttributeSet): View? =
-        when (name) {
-            EngineView::class.java.name -> components.core.engine.createView(context, attrs).asView()
-            else -> super.onCreateView(parent, name, context, attrs)
-        }
+            when (name) {
+                EngineView::class.java.name -> components.core.engine.createView(context, attrs).asView()
+                else -> super.onCreateView(parent, name, context, attrs)
+            }
 
     private fun onNonFatalCrash(crash: Crash) {
         Snackbar.make(findViewById(android.R.id.content), R.string.crash_report_non_fatal_message, LENGTH_LONG)
-            .setAction(R.string.crash_report_non_fatal_action) {
-                crashIntegration.sendCrashReport(crash)
-            }.show()
+                .setAction(R.string.crash_report_non_fatal_action) {
+                    crashIntegration.sendCrashReport(crash)
+                }.show()
     }
 
     private fun openPopup(webExtensionState: WebExtensionState) {

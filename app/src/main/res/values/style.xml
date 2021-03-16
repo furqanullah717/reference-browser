@@ -13,6 +13,9 @@
         <item name="android:navigationBarColor">@color/evenDarker</item>
         <item name="android:windowBackground">@color/dark</item>
     </style>
+    <style name="AppThemeNotActionBar.Launcher" parent="AppThemeNotActionBar">
+        <item name="android:windowBackground">@drawable/splash_background</item>
+    </style>
 
     <style name="AppTheme" parent="Theme.AppCompat">
         <item name="preferenceTheme">@style/PreferenceThemeOverlay</item>

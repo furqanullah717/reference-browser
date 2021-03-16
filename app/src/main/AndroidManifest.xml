@@ -28,6 +28,7 @@
 
         <activity android:name=".BrowserActivity"
             android:launchMode="singleTask"
+            android:theme="@style/AppThemeNotActionBar.Launcher"
             android:resizeableActivity="true"
             android:supportsPictureInPicture="true"
             android:configChanges="keyboard|keyboardHidden|mcc|mnc|orientation|screenSize|locale|layoutDirection|smallestScreenSize|screenLayout"
