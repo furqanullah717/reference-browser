@@ -22,33 +22,33 @@ class Components(private val context: Context) {
     val core by lazy { Core(context) }
     val useCases by lazy {
         UseCases(
-            context,
-            core.engine,
-            core.sessionManager,
-            core.store,
-            core.shortcutManager
+                context,
+                core.engine,
+                core.sessionManager,
+                core.store,
+                core.shortcutManager
         )
     }
 
     // Background services are initiated eagerly; they kick off periodic tasks and setup an accounts system.
     val backgroundServices by lazy {
         BackgroundServices(
-            context,
-            push,
-            core.lazyHistoryStorage,
-            core.lazyRemoteTabsStorage,
-            core.lazyLoginsStorage
+                context,
+                push,
+                core.lazyHistoryStorage,
+                core.lazyRemoteTabsStorage,
+                core.lazyLoginsStorage
         )
     }
     val analytics by lazy { Analytics(context) }
     val utils by lazy {
         Utilities(
-            context,
-            core.store,
-            useCases.sessionUseCases,
-            useCases.searchUseCases,
-            useCases.tabsUseCases,
-            useCases.customTabsUseCases
+                context,
+                core.store,
+                useCases.sessionUseCases,
+                useCases.searchUseCases,
+                useCases.tabsUseCases,
+                useCases.customTabsUseCases
         )
     }
     val services by lazy { Services(context, backgroundServices.accountManager, useCases.tabsUseCases) }
@@ -56,10 +56,10 @@ class Components(private val context: Context) {
 
     val autofillConfiguration by lazy {
         AutofillConfiguration(
-            storage = core.loginsStorage,
-            publicSuffixList = utils.publicSuffixList,
-            unlockActivity = AutofillUnlockActivity::class.java,
-            applicationName = context.getString(R.string.app_name)
+                storage = core.loginsStorage,
+                publicSuffixList = utils.publicSuffixList,
+                unlockActivity = AutofillUnlockActivity::class.java,
+                applicationName = context.getString(R.string.app_name),
         )
     }
 }
